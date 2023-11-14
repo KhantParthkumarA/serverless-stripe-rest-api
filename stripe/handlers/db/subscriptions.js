@@ -52,7 +52,7 @@ exports.Get = async (query) => {
 
 
 // delete
-exports.Delete = async (event) => {
+exports.Delete = async (id) => {
     // const request = JSON.parse(event.body);
     // event.pathParameters?.id
     let responseBody = "";
@@ -61,7 +61,7 @@ exports.Delete = async (event) => {
     const params = {
         TableName: "subscriptions",
         Key: {
-            id: '12345'
+            id
         }
     };
 
