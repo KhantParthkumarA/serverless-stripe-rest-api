@@ -6,25 +6,33 @@ const AWS = require('aws-sdk');
 
 module.exports.createStripeCheckout = async (event) => {
   console.log('running');
-
-  if (!event.body) {
-    console.log('Nothing submitted.');
-
-    return getResponse(400, null, 'Request not found');
-  }
-
   try {
-    const checkoutRequest = JSON.parse(event.body);
+    if (!event.body) {
+      console.log('Nothing submitted.');
+      return getResponse(400, null, 'Request not found');
+    }
+
+    const request = JSON.stringify(event.body)
+    if (!event.pathParameter?.id || request.userId) {
+      console.log('Nothing submitted.');
+
+      return getResponse(400, null, 'Request not found');
+    }
+
+    const userDetails = await userService.Get(request.userId);
+    if (!userDetails.Items.length) {
+      return getResponse(404, JSON.stringify({ message: 'User details does not exists' }), null);
+    }
 
     // TODO: build line items from source
     // should contain price (object) and quantity (number)
-    const lineItems = checkoutRequest.lineItems;
+    const lineItems = request.lineItems;
 
     const data = {
-      customer: checkoutRequest.customerId,
-      success_url: checkoutRequest.successUrl,
+      customer: userDetails.Items[0].stripeCustomerId,
+      success_url: request.successUrl,
       line_items: lineItems,
-      mode: checkoutRequest.paymentMode
+      mode: request.paymentMode
     };
 
     const session = await stripe.checkout.sessions.create(data);

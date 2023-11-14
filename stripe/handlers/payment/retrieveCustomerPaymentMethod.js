@@ -6,14 +6,23 @@ const AWS = require('aws-sdk');
 
 module.exports.retrieveCustomerPaymentMethod = async (event) => {
   console.log('running');
-
-  if (!event.pathParameter?.id) {
-    console.log('Nothing submitted.');
-
-    return getResponse(400, null, 'Request not found');
-  }
-
   try {
+    const request = JSON.stringify(event.body)
+    if (!event.pathParameter?.id || request.userId) {
+      console.log('Nothing submitted.');
+
+      return getResponse(400, null, 'Request not found');
+    }
+
+    const userDetails = await userService.Get(request.userId);
+    if (!userDetails.Items.length) {
+      return getResponse(404, JSON.stringify({ message: 'User details does not exists' }), null);
+    }
+
+    if (!userDetails.Items[0].stripeCustomerId) {
+      return getResponse(404, JSON.stringify({ message: 'User stripe customer details does not exists' }), null);
+    }
+
     const paymentMethod = await stripe.paymentMethods.retrieve(event.pathParameters.id);
 
     return getResponse(200, JSON.stringify(paymentMethod), null);

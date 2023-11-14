@@ -13,17 +13,41 @@ module.exports.addOrUpdatePaymentMethod = async (event) => {
     return getResponse(400, null, 'Request not found');
   }
 
-  try {
-    const paymentMethodDetails = JSON.parse(event.body);
+  const request = JSON.parse(event.body);
 
-    // TODO: handle payment method change with stripe
-    // add webhook handler if needed to capture change
-    // what does this do?
+    if (!request.paymentMethodId) {
+      return getResponse(400, JSON.stringify({ message: 'payment method id is required' }), null);
+    }
+    const userDetails = await userService.Get(request.userId);
+    if (!userDetails.Items.length) {
+      return getResponse(404, JSON.stringify({ message: 'User details does not exists' }), null);
+    }
+    if (!userDetails.Items[0].stripeCustomerId) {
+      return getResponse(404, JSON.stringify({ message: 'User stripe customer details does not exists' }), null);
+    }
 
-    return getResponse(200, null, null);
-  } catch (error) {
-    return getResponse(400, null, error);
-  }
+    try {
+      // TODO: This will attached payment method into stripe customer so for future payments this same payment method (card) will be used
+      await stripe.paymentMethods.attach(
+        request.paymentMethodId,
+        {
+          customer: userDetails.Items[0].stripeCustomerId
+        }
+      );
+
+      // TODO: for future auto debit from same card will required to set as default 
+      let updateCustomerDefaultPaymentMethod = await stripe.customers.update(
+        userDetails.Items[0].stripeCustomerId,
+        {
+          invoice_settings: {
+            default_payment_method:
+              request.paymentMethodId
+          }
+        }
+      );
+    } catch (error) {
+      // return getResponse(400, JSON.stringify({ message: error.message }), null);
+    }
 };
 
 function getResponse(statusCode, body, error) {

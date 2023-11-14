@@ -6,23 +6,28 @@ const AWS = require('aws-sdk');
 
 module.exports.upcomingInvoices = async (event) => {
   console.log('running');
-
-  if (!event.body) {
-    console.log('Nothing submitted.');
-
-    return getResponse(400, null, 'Request not found');
-  }
-
   try {
-    const invoiceRequest = JSON.parse(event.body);
+    if (!event.body) {
+      console.log('Nothing submitted.');
+      return getResponse(400, null, 'Request not found');
+    }
 
-    const invoice = await stripe.invoices.retrieveUpcoming({
-      // subscription_prorate: true,
-      customer: invoiceRequest.customerId,
-      subscription: invoiceRequest.subscriptionId
+    const request = JSON.parse(event.body);
+
+    const userDetails = await userService.Get(request.userId);
+    if (!userDetails.Items.length) {
+      return getResponse(404, JSON.stringify({ message: 'User details does not exists' }), null);
+    }
+
+    if (!userDetails.Items[0].stripeCustomerId) {
+      return getResponse(404, JSON.stringify({ message: 'User stripe customer details does not exists' }), null);
+    }
+
+    const invoices = await stripe.invoices.retrieveUpcoming({
+      customer: userDetails.Items[0].stripeCustomerId
     });
 
-    return getResponse(200, JSON.stringify(invoice), null);
+    return getResponse(200, JSON.stringify(invoices), null);
   } catch (error) {
     return getResponse(400, null, error);
   }
