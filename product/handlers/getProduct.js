@@ -28,7 +28,7 @@ module.exports.getProduct = async (event) => {
       ? getResponse(200, JSON.stringify(product), null)
       : getResponse(404, null, null);
   } catch (error) {
-    return getResponse(400, null, error);
+    return getResponse(400, JSON.stringify({ message: error.message }), null);
   }
 };
 

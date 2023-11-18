@@ -5,6 +5,7 @@ const stripe = require('stripe')(stripeSecret);
 const AWS = require('aws-sdk');
 
 const subscriptionService = require('../db/subscriptions')
+const userService = require('../db/users')
 
 module.exports.deleteStripeSubscription = async (event) => {
   console.log('running');
@@ -48,17 +49,17 @@ module.exports.deleteStripeSubscription = async (event) => {
       status: 'canceled'
     })
     const updatedUserDetails = await userService.Post({
-      ...userDetails,
+      ...userDetails.Items[0],
       id: userDetails.Items[0].id,
       status: 'active',
-      currentSubscriptionId: currentSubscription.id,
+      currentSubscriptionId: null,
       updatedAt: new Date(),
     })
 
     return getResponse(200, JSON.stringify(updateDbSubscription), null);
 
   } catch (error) {
-    return getResponse(400, null, error);
+    return getResponse(400, JSON.stringify({ message: error.message }), null);
   }
 
   // try {
@@ -67,7 +68,7 @@ module.exports.deleteStripeSubscription = async (event) => {
 
   //   return getResponse(200, JSON.stringify(subscription), null);
   // } catch (error) {
-  //   return getResponse(400, null, error);
+  //   return getResponse(400, JSON.stringify({ message: error.message }), null);
   // }
 };
 

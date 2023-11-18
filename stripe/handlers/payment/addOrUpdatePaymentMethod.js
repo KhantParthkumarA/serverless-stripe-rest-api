@@ -46,7 +46,7 @@ module.exports.addOrUpdatePaymentMethod = async (event) => {
         }
       );
     } catch (error) {
-      // return getResponse(400, JSON.stringify({ message: error.message }), null);
+      return getResponse(400, JSON.stringify({ message: error.message }), null);
     }
 };
 

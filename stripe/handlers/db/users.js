@@ -1,10 +1,12 @@
 var AWS = require("aws-sdk");
-require('dotenv').config()
+const config = require('../../../env')
 let awsConfig = {
     "region": "us-east-1",
     "endpoint": "http://dynamodb.us-east-1.amazonaws.com",
-    "accessKeyId": process.env.accesskey, "secretAccessKey": process.env.secretkey
+    "accessKeyId": config.accesskey, "secretAccessKey": config.secretkey
 };
+
+console.log(awsConfig)
 AWS.config.update(awsConfig);
 
 let docClient = new AWS.DynamoDB.DocumentClient();
@@ -73,6 +75,7 @@ exports.Delete = async (id) => {
             id
         }
     };
+    console.log('id - ', id)
 
     try {
         const data = await docClient.delete(params).promise();
@@ -98,30 +101,21 @@ exports.Delete = async (id) => {
 exports.Post = async (data) => {
     let responseBody = "";
     let statusCode = 0;
-
+    console.log('data - ', data)
     const params = {
         TableName: "users",
         Item: data
     };
-
+    let result;
     try {
-        const data = await docClient.put(params).promise();
-        responseBody = JSON.stringify(data);
-        statusCode = 201;
+        result = await docClient.put(params).promise();
     } catch (err) {
-        responseBody = `Unable to put Product: ${err}`;
+        result = `Unable to put Product: ${err}`;
         statusCode = 403;
+        console.log('err - ', err)
     }
 
-    const response = {
-        statusCode: statusCode,
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: responseBody
-    };
-
-    return response;
+    return result;
 };
 
 // Hardcoded UPDATE (put)

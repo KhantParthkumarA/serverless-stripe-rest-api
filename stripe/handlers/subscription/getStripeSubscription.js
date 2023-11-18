@@ -30,14 +30,14 @@ module.exports.getStripeSubscription = async (event) => {
       return getResponse(400, JSON.stringify({ message: 'User does not have any active subscription' }), null);
     }
 
-    if (!subscriptionDetails[0].id) {
+    if (!subscriptionDetails[0].userId) {
       return getResponse(400, JSON.stringify({ message: 'Invalid subscription details' }), null);
     }
     const subscription = await stripe.subscriptions.retrieve(subscriptionDetails[0].subscriptionId);
 
     return getResponse(200, JSON.stringify(subscription), null);
   } catch (error) {
-    return getResponse(400, null, error);
+    return getResponse(400, JSON.stringify({ message: error.message }), null);
   }
 };
 

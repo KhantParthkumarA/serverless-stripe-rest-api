@@ -35,7 +35,7 @@ module.exports.updateProduct = async (event) => {
 
     return getResponse(200, JSON.stringify(product), null);
   } catch (error) {
-    return getResponse(400, null, error);
+    return getResponse(400, JSON.stringify({ message: error.message }), null);
   }
 };
 

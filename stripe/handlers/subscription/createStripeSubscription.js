@@ -53,7 +53,7 @@ module.exports.createStripeSubscription = async (event) => {
     }
 
     const subscriptions = await stripe.subscriptions.list({ customer: userDetails.Items[0].stripeCustomerId, status: 'active' });
-
+    console.log('subscriptions.data?.length- ', subscriptions.data?.length)
     // TODO: this will avoid to create multiple subscription and update only price of current subscription and only user subscription price upgraded not product price upgraded
     if (subscriptions.data?.length) {
       const subscription = subscriptions.data[0];
@@ -69,18 +69,26 @@ module.exports.createStripeSubscription = async (event) => {
           ]
         }
       );
+      console.log('updatedSubscription- ', updatedSubscription)
 
       const subscriptionDetails = await subscriptionService.create({
         userId: request.userId,
         status: 'active',
-        stripeSubscriptionId: subscription.id,
+        subscriptionId: subscription.id,
         updatedAt: new Date(),
-        id: userDetails.Items[0].id + Date.now()
+        id: String(userDetails.Items[0].id) + Date.now()
+      })
+      console.log('subscriptionDetails- ', subscriptionDetails)
+      const updatedUserDetails = await userService.Post({
+        ...userDetails.Items[0],
+        id: userDetails.Items[0].id,
+        status: 'active',
+        currentSubscriptionId: subscription.id,
+        updatedAt: new Date(),
       })
 
       return getResponse(200, JSON.stringify({ subscriptionDetails, stripeSubscription: updatedSubscription }), null);
     }
-
     const subscription = await stripe.subscriptions.create({
       customer: userDetails.Items[0].stripeCustomerId,
       items: [{ plan: request.planId }],
@@ -89,26 +97,30 @@ module.exports.createStripeSubscription = async (event) => {
         userid: request.userId
       }
     });
+    console.log('subscription1- ', subscription)
 
     const subscriptionDetails = await subscriptionService.create({
       userId: userDetails.Items[0].id,
       status: 'active',
-      stripeSubscriptionId: subscription.id,
+      subscriptionId: subscription.id,
       updatedAt: new Date(),
-      id: userDetails.Items[0].id + Date.now()
+      id: String(userDetails.Items[0].id) + Date.now()
     })
+    console.log('subscriptionDetails1- ', subscriptionDetails)
 
     const updatedUserDetails = await userService.Post({
-      ...userDetails,
+      ...userDetails.Items[0],
       id: userDetails.Items[0].id,
       status: 'active',
       currentSubscriptionId: subscription.id,
       updatedAt: new Date(),
     })
+    console.log('updatedUserDetails1- ', updatedUserDetails)
 
     return getResponse(200, JSON.stringify({ subscriptionDetails, stripeSubscription: subscription }), null);
   } catch (error) {
-    return getResponse(400, null, error);
+    // return getResponse(400, JSON.stringify({ message: error.message }), null);
+    return getResponse(400, JSON.stringify({ message: error.message }), null);
   }
 };
 

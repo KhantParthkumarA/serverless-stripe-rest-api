@@ -5,6 +5,7 @@ const stripe = require('stripe')(stripeSecret);
 const AWS = require('aws-sdk');
 
 const subscriptionService = require('../db/subscriptions')
+const userService = require('../db/users')
 
 module.exports.upgradeOrDownGradeSubscription = async (event) => {
   console.log('running');
@@ -63,7 +64,7 @@ module.exports.upgradeOrDownGradeSubscription = async (event) => {
     })
 
     const updatedUserDetails = await userService.Post({
-      ...user,
+      ...user.Items[0],
       id: user.Items[0].id,
       status: 'active',
       currentSubscriptionId: currentSubscription.id,
@@ -72,7 +73,7 @@ module.exports.upgradeOrDownGradeSubscription = async (event) => {
 
     return getResponse(200, JSON.stringify(updateDbSubscription), null);
   } catch (error) {
-    return getResponse(400, null, error);
+    return getResponse(400, JSON.stringify({ message: error.message }), null);
   }
 };
 

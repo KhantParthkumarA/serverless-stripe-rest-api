@@ -28,7 +28,7 @@ module.exports.getStripeCustomer = async (event) => {
       return getResponse(200, JSON.stringify({ message: 'User Details does not exists' }), null);
     }
   } catch (error) {
-    return getResponse(400, null, error);
+    return getResponse(400, JSON.stringify({ message: error.message }), null);
   }
 };
 

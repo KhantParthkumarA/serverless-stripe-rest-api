@@ -1,9 +1,9 @@
 var AWS = require("aws-sdk");
-require('dotenv').config()
+const config = require('../../../env')
 let awsConfig = {
     "region": "us-east-1",
     "endpoint": "http://dynamodb.us-east-1.amazonaws.com",
-    "accessKeyId": process.env.accesskey, "secretAccessKey": process.env.secretkey
+    "accessKeyId": config.accesskey, "secretAccessKey": config.secretkey
 };
 AWS.config.update(awsConfig);
 

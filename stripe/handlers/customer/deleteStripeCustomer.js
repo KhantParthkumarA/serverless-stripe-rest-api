@@ -20,12 +20,13 @@ module.exports.deleteStripeCustomer = async (event) => {
     const userDetails = await userService.Get(customerId)
     if (userDetails.Items.length) {
       const deleted = await stripe.customers.del(userDetails.Items[0].stripeCustomerId);
+      await userService.Delete(customerId)
       return getResponse(200, JSON.stringify(deleted), null);
     } else {
       return getResponse(200, JSON.stringify({ 'message': 'User does not exists' }), null);
     }
   } catch (error) {
-    return getResponse(400, null, error);
+    return getResponse(400, JSON.stringify({ message: error.message }), null);
   }
 };
 

@@ -1,27 +1,22 @@
 var AWS = require("aws-sdk");
-require('dotenv').config()
+const config = require('../../../env')
 let awsConfig = {
     "region": "us-east-1",
     "endpoint": "http://dynamodb.us-east-1.amazonaws.com",
-    "accessKeyId": process.env.accesskey, "secretAccessKey": process.env.secretkey
+    "accessKeyId": config.accesskey, "secretAccessKey": config.secretkey
 };
 AWS.config.update(awsConfig);
 
 let docClient = new AWS.DynamoDB.DocumentClient();
 
 module.exports.create = async function (data) {
-    var input = {
-        id: data.id, // generate new id for create new record
-        status: data.status,
-        subscriptionId: data.stripeSubscriptionId,
-        updatedAt: data.updatedAt,
-        userId: data.userId
-    };
     var params = {
         TableName: "subscriptions",
-        Item: input
+        Item: data
     };
+    console.log(data)
     const result = await docClient.put(params).promise();
+    console.log('result - ', result)
     return result;
 }
 

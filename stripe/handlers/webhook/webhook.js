@@ -1,6 +1,8 @@
 'use strict';
 
 const AWS = require('aws-sdk');
+const stripeSecret = 'sk_test_51O3ObsJDvifNBMqnhYzPwcePEGfPf8ZvRIdkyt5r4l1QAKhliKFWhVeVYCzDiuui1W6HvvZX1DTn0oCsdpCDC5k100TwErhOon';
+const stripe = require('stripe')(stripeSecret);
 
 const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' });
 const tableName = 'Subscription';
@@ -29,12 +31,12 @@ module.exports.webhook = async (event) => {
       default: return await handleUnknownType(type, data);
     }
   } catch (error) {
-    return getResponse(400, null, error);
+    return getResponse(400, JSON.stringify({ message: error.message }), null);
   }
 };
 
 async function invoicePaymentFailed(data) {
-  console.log(`\n stripe_debug_${eventType} >>>>>>>>`, JSON.stringify(data));
+  console.log(`\n stripe_debug >>>>>>>>`, JSON.stringify(data));
   // console.log("🚀 ~ file: subscription.controller.ts:575 ~ webhook ~ data.object.billing_reason ==:", data.object.billing_reason == "subscription_cycle")
   try {
     console.log("🚀 ~ file: subscription.controller.ts:490 ~ webhook ~ data.object.billing_reason:", data.object.billing_reason == "subscription_cycle")
@@ -49,14 +51,12 @@ async function invoicePaymentFailed(data) {
         const result = await userService.Post({
           ...userDetials.Items[0],
           id: user_id,
-          stripeCustomerId: customer_id,
-          email_id: request.email,
           currentSubscriptionId: null
         })
       }
       const updateDbSubscription = await subscriptionService.Delete(data.object.id)
 
-      return getResponse(200, { message: `subscription ${data.object.status}` }, null)
+      return getResponse(200, JSON.stringify({ message: `subscription ${data.object.status}` }), null)
 
     }
 
@@ -78,7 +78,7 @@ async function invoicePaymentSucceeded(data) {
 
 async function customerSubscriptionDeleted(data) {
   // TODO: update dynamo
-  console.log(`\n stripe_debug_${eventType} >>>>>>>>`, JSON.stringify(data));
+  console.log(`\n stripe_debug >>>>>>>>`, JSON.stringify(data));
   // This Event is used to reset usage in USER table and Deleting subscription from Subscription table
   const user_id = data.object.metadata.userid;
 
@@ -91,17 +91,16 @@ async function customerSubscriptionDeleted(data) {
         const result = await userService.Post({
           ...userDetials.Items[0],
           id: user_id,
-          stripeCustomerId: customer_id,
-          email_id: request.email,
           currentSubscriptionId: null
         })
       }
       const updateDbSubscription = await subscriptionService.Delete(data.object.id)
     }
-    return getResponse(200, { message: `subscription ${data.object.status}` }, null)
+    return getResponse(200, JSON.stringify({ message: `subscription ${data.object.status}` }), null)
 
   } catch (error) {
-    return getResponse(200, { message: `Fail to delete subscription ${id}` }, error)
+    console.log(error.message)
+    return getResponse(200, JSON.stringify({ message: `Fail to delete subscription ${data.object.id}` }), error)
   }
 
 }
@@ -193,8 +192,6 @@ const handlePaymentSuccess = async (
       const result = await userService.Post({
         ...userDetials.Items[0],
         id: id,
-        stripeCustomerId: customer_id,
-        email_id: request.email,
         currentSubscriptionId: subscription_id
       })
     }
@@ -221,14 +218,14 @@ const handlePayment = async (data, eventType) => {
 
     return getResponse(
       200,
-      { message: `billing_reason: ${data.object.billing_reason}, User:${data.object.customer} :  Success` },
+      JSON.stringify({ message: `billing_reason: ${data.object.billing_reason}, User:${data.object.customer} :  Success` }),
       null
     )
   } catch (error) {
     console.log(`\n Error:billing_reason: ${data.object.billing_reason}, User:${data.object.customer}  `, error)
     return getResponse(
       400,
-      { message: `billing_reason: ${data.object.billing_reason}, User:${data.object.customer}:  failed` },
+      JSON.stringify({ message: `billing_reason: ${data.object.billing_reason}, User:${data.object.customer}:  failed` }),
       error
     )
   }
