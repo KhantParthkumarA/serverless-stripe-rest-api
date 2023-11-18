@@ -104,32 +104,32 @@ functions:
           method: delete
 
   retrieveCustomerPaymentMethod:
-    handler: stripe/handlers/payment/retrieveCustomerPaymentMethod.retrieveCustomerPaymentMethod
+    handler: /handlers/payment/retrieveCustomerPaymentMethod.retrieveCustomerPaymentMethod
     events:
       - httpApi:
           path: /stripe/pm/{id}
           method: get
   createStripeCheckout:
-    handler: stripe/handlers/payment/createStripeCheckout.createStripeCheckout
+    handler: /handlers/payment/createStripeCheckout.createStripeCheckout
     events:
       - httpApi:
           path: /stripe/subscriptions/create
           method: post
   addOrUpdatePaymentMethod:
-    handler: stripe/handlers/payment/addOrUpdatePaymentMethod.addOrUpdatePaymentMethod
+    handler: /handlers/payment/addOrUpdatePaymentMethod.addOrUpdatePaymentMethod
     events:
       - httpApi:
           path: /stripe/pm/{id}
           method: post
   upcomingInvoices:
-    handler: stripe/handlers/payment/upcomingInvoices.upcomingInvoices
+    handler: /handlers/payment/upcomingInvoices.upcomingInvoices
     events:
       - httpApi:
           path: /stripe/invoices/upcoming
           method: post
 
   webhook:
-    handler: stripe/handlers/webhook/webhook.webhook
+    handler: /handlers/webhook/webhook.webhook
     events:
       - httpApi:
           path: /stripe/webhook

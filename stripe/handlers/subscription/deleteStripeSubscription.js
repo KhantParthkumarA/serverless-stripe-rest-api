@@ -18,6 +18,14 @@ module.exports.deleteStripeSubscription = async (event) => {
     const request = JSON.parse(event.body);
     const userId = event.pathParameters.id;
 
+    const userDetails = await userService.Get(userId);
+    if (!userDetails.Items.length) {
+      return getResponse(404, JSON.stringify({ message: 'User details does not exists' }), null);
+    }
+    if (!userDetails.Items[0].stripeCustomerId) {
+      return getResponse(404, JSON.stringify({ message: 'User stripe customer details does not exists' }), null);
+    }
+
     const subscription = await subscriptionService.Get({
       userId,
     });
@@ -38,6 +46,13 @@ module.exports.deleteStripeSubscription = async (event) => {
       price: subscription.price,
       updatedAt: new Date(),
       status: 'canceled'
+    })
+    const updatedUserDetails = await userService.Post({
+      ...userDetails,
+      id: userDetails.Items[0].id,
+      status: 'active',
+      currentSubscriptionId: currentSubscription.id,
+      updatedAt: new Date(),
     })
 
     return getResponse(200, JSON.stringify(updateDbSubscription), null);

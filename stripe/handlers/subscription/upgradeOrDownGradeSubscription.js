@@ -19,6 +19,14 @@ module.exports.upgradeOrDownGradeSubscription = async (event) => {
     const request = JSON.parse(event.body);
     const userId = event.pathParameters.id;
 
+    const user = await userService.Get(userId)
+    if (!user.Items.length) {
+      return getResponse(404, JSON.stringify({ message: 'User details does not exists' }), null);
+    }
+    if (!user.Items[0].stripeCustomerId) {
+      return getResponse(404, JSON.stringify({ message: 'User stripe customer details does not exists' }), null);
+    }
+
     const subscription = await subscriptionService.Get({
       userId,
     });
@@ -52,6 +60,14 @@ module.exports.upgradeOrDownGradeSubscription = async (event) => {
       stripeSubscriptionId: currentSubscription.id,
       price: request.priceId,
       updatedAt: new Date()
+    })
+
+    const updatedUserDetails = await userService.Post({
+      ...user,
+      id: user.Items[0].id,
+      status: 'active',
+      currentSubscriptionId: currentSubscription.id,
+      updatedAt: new Date(),
     })
 
     return getResponse(200, JSON.stringify(updateDbSubscription), null);

@@ -101,11 +101,7 @@ exports.Post = async (data) => {
 
     const params = {
         TableName: "users",
-        Item: {
-            id: data.id,
-            stripeCustomerId: data.stripeCustomerId,
-            email_id: data.email_id
-        }
+        Item: data
     };
 
     try {
@@ -154,46 +150,6 @@ exports.Put = async (event) => {
         statusCode = 204;
     } catch (err) {
         responseBody = `Unable to update Product: ${err}`;
-        statusCode = 403;
-    }
-
-    const response = {
-        statusCode: statusCode,
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: responseBody
-    };
-
-    return response;
-};
-
-/* Now, using API Gateway. It uses event parameter */
-
-// PUT (post)
-
-exports.put = async (event) => {
-    const request = JSON.parse(event.body);
-    // event.pathParameters?.id
-    let responseBody = "";
-    let statusCode = 0;
-
-    const { id, productName } = JSON.parse(event.body);
-
-    const params = {
-        TableName: "users",
-        Item: {
-            id: id,
-            productName: productName
-        }
-    };
-
-    try {
-        const data = await docClient.put(params).promise();
-        responseBody = JSON.stringify(data);
-        statusCode = 201;
-    } catch (err) {
-        responseBody = `Unable to put Product: ${err}`;
         statusCode = 403;
     }
 

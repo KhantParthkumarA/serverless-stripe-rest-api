@@ -17,9 +17,11 @@ module.exports.getStripeSubscription = async (event) => {
 
   try {
     const user = await userService.Get(event.pathParameters.id)
-    console.log('user - ', user)
     if (!user.Items.length) {
-      return getResponse(400, JSON.stringify({ message: 'User details does not exists' }), null);
+      return getResponse(404, JSON.stringify({ message: 'User details does not exists' }), null);
+    }
+    if (!user.Items[0].stripeCustomerId) {
+      return getResponse(404, JSON.stringify({ message: 'User stripe customer details does not exists' }), null);
     }
 
     const subscriptionDetails = await subcriptionService.Get({ userId: event.pathParameters.id, status: 'active' })

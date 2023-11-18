@@ -5,6 +5,9 @@ const AWS = require('aws-sdk');
 const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' });
 const tableName = 'Subscription';
 
+const userService = require('../db/users')
+const subscriptionService = require('../db/subscriptions')
+
 module.exports.webhook = async (event) => {
   console.log('running');
 
@@ -43,15 +46,15 @@ async function invoicePaymentFailed(data) {
 
       if (userDetials.Items.length) {
         // update record in db by userid
-        const result = await userServices.Post({
+        const result = await userService.Post({
           ...userDetials.Items[0],
           id: user_id,
           stripeCustomerId: customer_id,
           email_id: request.email,
-          currentPlanId: null
+          currentSubscriptionId: null
         })
       }
-      const updateDbSubscription = await subscriptionService.delete(data.object.id)
+      const updateDbSubscription = await subscriptionService.Delete(data.object.id)
 
       return getResponse(200, { message: `subscription ${data.object.status}` }, null)
 
@@ -85,15 +88,15 @@ async function customerSubscriptionDeleted(data) {
     if (deactiveStatus.includes(data.object.status)) {
       if (userDetials.Items.length) {
         // update record in db by userid
-        const result = await userServices.Post({
+        const result = await userService.Post({
           ...userDetials.Items[0],
           id: user_id,
           stripeCustomerId: customer_id,
           email_id: request.email,
-          currentPlanId: null
+          currentSubscriptionId: null
         })
       }
-      const updateDbSubscription = await subscriptionService.delete(data.object.id)
+      const updateDbSubscription = await subscriptionService.Delete(data.object.id)
     }
     return getResponse(200, { message: `subscription ${data.object.status}` }, null)
 
@@ -187,12 +190,12 @@ const handlePaymentSuccess = async (
 
     if (userDetials.Items.length) {
       // update record in db by userid
-      const result = await userServices.Post({
+      const result = await userService.Post({
         ...userDetials.Items[0],
         id: id,
         stripeCustomerId: customer_id,
         email_id: request.email,
-        currentPlanId: subscription_id
+        currentSubscriptionId: subscription_id
       })
     }
 

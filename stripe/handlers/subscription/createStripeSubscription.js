@@ -98,6 +98,14 @@ module.exports.createStripeSubscription = async (event) => {
       id: userDetails.Items[0].id + Date.now()
     })
 
+    const updatedUserDetails = await userService.Post({
+      ...userDetails,
+      id: userDetails.Items[0].id,
+      status: 'active',
+      currentSubscriptionId: subscription.id,
+      updatedAt: new Date(),
+    })
+
     return getResponse(200, JSON.stringify({ subscriptionDetails, stripeSubscription: subscription }), null);
   } catch (error) {
     return getResponse(400, null, error);
