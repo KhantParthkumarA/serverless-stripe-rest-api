@@ -4,26 +4,21 @@ const stripeSecret = 'sk_test_51O3ObsJDvifNBMqnhYzPwcePEGfPf8ZvRIdkyt5r4l1QAKhli
 const stripe = require('stripe')(stripeSecret);
 
 const userService = require('../db/users')
+const subcriptionService = require('../db/subscriptions')
+const productService = require('../db/products')
 
-module.exports.deleteStripeCustomer = async (event) => {
+module.exports.listStripeProducts = async (event) => {
   console.log('running');
 
-  if (!event.pathParameters?.id) {
-    console.log('Nothing submitted.');
-    return getResponse(400, null, 'Request not found');
-  }
-
   try {
-    const customerId = event.pathParameters.id;
-
-    const userDetails = await userService.Get(customerId)
-    if (userDetails.Items.length) {
-      const deleted = await stripe.customers.del(userDetails.Items[0].stripeCustomerId);
-      await userService.Delete(customerId)
-      return getResponse(200, JSON.stringify(deleted), null);
-    } else {
-      return getResponse(200, JSON.stringify({ 'message': 'User does not exists' }), null);
+    let productDetails = await productService.List()
+    console.log('productDetails - ', productDetails)
+    if (productDetails.statusCode !== 200) {
+      return getResponse(404, JSON.stringify({ message: 'Products does not exists' }), null);
     }
+    productDetails = JSON.parse(productDetails.body)
+    return getResponse(200, JSON.stringify(productDetails), null);
+
   } catch (error) {
     return getResponse(400, JSON.stringify({ message: error.message }), null);
   }

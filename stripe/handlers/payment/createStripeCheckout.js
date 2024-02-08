@@ -2,7 +2,7 @@
 
 const stripeSecret = 'sk_test_51O3ObsJDvifNBMqnhYzPwcePEGfPf8ZvRIdkyt5r4l1QAKhliKFWhVeVYCzDiuui1W6HvvZX1DTn0oCsdpCDC5k100TwErhOon';
 const stripe = require('stripe')(stripeSecret);
-const AWS = require('aws-sdk');
+
 const userService = require('../db/users')
 
 module.exports.createStripeCheckout = async (event) => {
@@ -14,7 +14,12 @@ module.exports.createStripeCheckout = async (event) => {
     }
 
     const request = JSON.parse(event.body)
-    const userDetails = await userService.Get(request.userId);
+    const userDetails = await userService.GetByFilter({
+      FilterExpression: "id = :id",
+      ExpressionAttributeValues: {
+        ":id": request.userId
+      }
+    });
     console.log('userDetails', userDetails)
     if (!userDetails.Items.length) {
       return getResponse(404, JSON.stringify({ message: 'User details does not exists' }), null);

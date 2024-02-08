@@ -230,3 +230,17 @@ output
 
 ``` json
 ```
+
+
+``js
+
+for change port add below code on root of serverless.yml
+custom:
+  serverless-offline:
+    httpPort: 9090
+
+run project using 
+$ serverless offline --httpPort 9090
+
+
+``

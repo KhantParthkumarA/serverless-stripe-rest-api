@@ -2,7 +2,6 @@
 
 const stripeSecret = 'sk_test_51O3ObsJDvifNBMqnhYzPwcePEGfPf8ZvRIdkyt5r4l1QAKhliKFWhVeVYCzDiuui1W6HvvZX1DTn0oCsdpCDC5k100TwErhOon';
 const stripe = require('stripe')(stripeSecret);
-const AWS = require('aws-sdk');
 const subscriptionService = require('../db/subscriptions')
 const userService = require('../db/users')
 
@@ -27,7 +26,7 @@ module.exports.stopOrRestartStripeSubscription = async (event) => {
     }
     const subscription = await subscriptionService.Get({
       userId,
-      subscriptionId: stopRequest.subscriptionId
+      currentSubscriptionId: stopRequest.currentSubscriptionId
     });
 
     if (!subscription.length) {
@@ -35,7 +34,7 @@ module.exports.stopOrRestartStripeSubscription = async (event) => {
     }
 
     const updatedSubscription = await stripe.subscriptions.update(
-      stopRequest.subscriptionId,
+      stopRequest.currentSubscriptionId,
       { cancel_at_period_end: stopRequest.cancel }
     );
 
@@ -44,7 +43,7 @@ module.exports.stopOrRestartStripeSubscription = async (event) => {
     const updateDbSubscription = await subscriptionService.Post({
       ...subscription[0],
       userId,
-      stripeSubscriptionId: stopRequest.subscriptionId,
+      currentSubscriptionId: stopRequest.currentSubscriptionId,
       status: stopRequest.cancel === true ? 'inactive' : 'active',
       updatedAt: new Date()
     })

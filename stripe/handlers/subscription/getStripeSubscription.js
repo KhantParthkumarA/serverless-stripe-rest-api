@@ -2,7 +2,6 @@
 
 const stripeSecret = 'sk_test_51O3ObsJDvifNBMqnhYzPwcePEGfPf8ZvRIdkyt5r4l1QAKhliKFWhVeVYCzDiuui1W6HvvZX1DTn0oCsdpCDC5k100TwErhOon';
 const stripe = require('stripe')(stripeSecret);
-const AWS = require('aws-sdk');
 
 const userService = require('../db/users')
 const subcriptionService = require('../db/subscriptions')
@@ -23,19 +22,24 @@ module.exports.getStripeSubscription = async (event) => {
     if (!user.Items[0].stripeCustomerId) {
       return getResponse(404, JSON.stringify({ message: 'User stripe customer details does not exists' }), null);
     }
-
-    const subscriptionDetails = await subcriptionService.Get({ userId: event.pathParameters.id, status: 'active' })
+    const subscriptionDetails = await subcriptionService.Get({ 
+      FilterExpression: "userId = :userId",
+      ExpressionAttributeValues: {
+          ":userId": event.pathParameters.id
+      }
+    })
     console.log('subscriptionDetails - ', subscriptionDetails, typeof subscriptionDetails)
-    if (!subscriptionDetails.length) {
-      return getResponse(400, JSON.stringify({ message: 'User does not have any active subscription' }), null);
-    }
 
-    if (!subscriptionDetails[0].userId) {
-      return getResponse(400, JSON.stringify({ message: 'Invalid subscription details' }), null);
-    }
-    const subscription = await stripe.subscriptions.retrieve(subscriptionDetails[0].subscriptionId);
+    const stripeSubscription = await Promise.all(subscriptionDetails.map(async data => {
+      try {
+        data.stripeSubscription = await stripe.subscriptions.retrieve(data.currentSubscriptionId)
+        return data;
+      } catch (error) {
+        return data;
+      }
+    }))
 
-    return getResponse(200, JSON.stringify(subscription), null);
+    return getResponse(200, JSON.stringify(stripeSubscription), null);
   } catch (error) {
     return getResponse(400, JSON.stringify({ message: error.message }), null);
   }

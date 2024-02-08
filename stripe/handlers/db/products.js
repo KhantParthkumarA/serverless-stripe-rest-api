@@ -1,4 +1,6 @@
 var AWS = require("aws-sdk");
+const stripeSecret = 'sk_test_51O3ObsJDvifNBMqnhYzPwcePEGfPf8ZvRIdkyt5r4l1QAKhliKFWhVeVYCzDiuui1W6HvvZX1DTn0oCsdpCDC5k100TwErhOon';
+const stripe = require('stripe')(stripeSecret);
 const config = require('../../../env')
 let awsConfig = {
     "region": "us-east-1",
@@ -9,35 +11,80 @@ AWS.config.update(awsConfig);
 
 let docClient = new AWS.DynamoDB.DocumentClient();
 
-module.exports.Create = function (event) {
-    const request = JSON.parse(event.body);
-    // event.pathParameters?.id
-    var params = {
-        TableName: "products",
-        Item: request
-    };
-    docClient.put(params, function (err, data) {
-        console.log(err, data)
-        if (err) {
-            console.log("users::save::error - " + JSON.stringify(err, null, 2));
-        } else {
-            console.log("users::save::success", data);
-        }
-    });
+function getResponse(statusCode, body, error) {
+    if (error) console.log('error is  - ', error);
+    console.log('statusCode - ', statusCode)
+    console.log('body - ', body, error)
+    console.log('error - ', error)
     return {
-        statusCode: 200,
+        statusCode: statusCode,
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': 'true',
             'content-type': 'application/json'
         },
-        body: 'success',
+        body: body,
+        error: error
     };
+}
+
+module.exports.Create = async function (event) {
+    const request = JSON.parse(event.body);
+    // event.pathParameters?.id
+    const price = await stripe.prices.create({
+        currency: 'usd',
+        unit_amount: request.price * 100,
+        recurring: {
+            interval: request.interval,
+        },
+        product_data: {
+            name: request.productName,
+        },
+    });
+    if (!price?.id) {
+        return getResponse(
+            400,
+            JSON.stringify({
+                status: 'error',
+                message: 'Failed to generate stripe product'
+            }),
+            null
+        )
+    }
+
+    var params = {
+        TableName: "products",
+        Item: { ...price, name: request.productName }
+    };
+    docClient.put(params, function (err, data) {
+        console.log(err, data)
+        if (err) {
+            console.log("users::save::error - " + JSON.stringify(err, null, 2));
+            return getResponse(
+                200,
+                JSON.stringify({
+                    status: 'error',
+                    message: 'Failed to generate stripe product'
+                }),
+                null
+            )
+        } else {
+            console.log("users::save::success", data);
+            return getResponse(
+                200,
+                JSON.stringify({
+                    status: 'success',
+                    data,
+                }),
+                null
+            )
+        }
+    });
 }
 
 // List 
 
-exports.List = async (event) => {
+exports.List = async () => {
     let responseBody = "";
     let statusCode = 0;
 
@@ -186,7 +233,7 @@ exports.UpdateByExpression = async (event) => {
     };
 
     try {
-        const data = await documentClient.update(params).promise();
+        const data = await docClient.update(params).promise();
         responseBody = JSON.stringify(data);
         statusCode = 204;
     } catch (err) {

@@ -35,6 +35,7 @@ exports.Get = async (query) => {
     };
 
     try {
+        console.log('params - ', params)
         const data = await docClient.scan(params).promise();
         responseBody = data.Items;
     } catch (err) {
@@ -91,7 +92,7 @@ exports.Post = async (data) => {
         Item: {
             userId: data.userId,
             status: data.status,
-            subscriptionId: data.stripeSubscriptionId,
+            currentSubscriptionId: data.currentSubscriptionId,
             updatedAt: data.updatedAt,
             price: data.price ? data.price : undefined
         }
@@ -138,7 +139,7 @@ exports.Put = async (event) => {
     };
 
     try {
-        const data = await documentClient.update(params).promise();
+        const data = await docClient.update(params).promise();
         responseBody = JSON.stringify(data);
         statusCode = 204;
     } catch (err) {

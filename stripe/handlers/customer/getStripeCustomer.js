@@ -2,7 +2,7 @@
 
 const stripeSecret = 'sk_test_51O3ObsJDvifNBMqnhYzPwcePEGfPf8ZvRIdkyt5r4l1QAKhliKFWhVeVYCzDiuui1W6HvvZX1DTn0oCsdpCDC5k100TwErhOon';
 const stripe = require('stripe')(stripeSecret);
-const AWS = require('aws-sdk');
+
 const userService = require('../db/users')
 
 module.exports.getStripeCustomer = async (event) => {

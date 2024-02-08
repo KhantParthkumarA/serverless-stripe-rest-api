@@ -2,7 +2,6 @@
 
 const stripeSecret = 'sk_test_51O3ObsJDvifNBMqnhYzPwcePEGfPf8ZvRIdkyt5r4l1QAKhliKFWhVeVYCzDiuui1W6HvvZX1DTn0oCsdpCDC5k100TwErhOon';
 const stripe = require('stripe')(stripeSecret);
-const AWS = require('aws-sdk');
 
 const subscriptionService = require('../db/subscriptions')
 const userService = require('../db/users')
@@ -35,7 +34,7 @@ module.exports.upgradeOrDownGradeSubscription = async (event) => {
       return getResponse(404, JSON.stringify({ message: 'User does not have any subscription' }), null);
     }
 
-    const currentSubscription = await stripe.subscriptions.retrieve(subscription[0].subscriptionId);
+    const currentSubscription = await stripe.subscriptions.retrieve(subscription[0].currentSubscriptionId);
 
     try {
       const updateSubscription = await stripe.subscriptions.update(
@@ -58,7 +57,7 @@ module.exports.upgradeOrDownGradeSubscription = async (event) => {
     const updateDbSubscription = await subscriptionService.Post({
       ...subscription[0],
       userId,
-      stripeSubscriptionId: currentSubscription.id,
+      currentSubscriptionId: currentSubscription.id,
       price: request.priceId,
       updatedAt: new Date()
     })

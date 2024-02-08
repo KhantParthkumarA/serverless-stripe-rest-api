@@ -2,7 +2,6 @@
 
 const stripeSecret = 'sk_test_51O3ObsJDvifNBMqnhYzPwcePEGfPf8ZvRIdkyt5r4l1QAKhliKFWhVeVYCzDiuui1W6HvvZX1DTn0oCsdpCDC5k100TwErhOon';
 const stripe = require('stripe')(stripeSecret);
-const AWS = require('aws-sdk');
 
 const subscriptionService = require('../db/subscriptions')
 const userService = require('../db/users')
@@ -35,7 +34,7 @@ module.exports.deleteStripeSubscription = async (event) => {
       return getResponse(404, JSON.stringify({ message: 'User does not have any subscription' }), null);
     }
 
-    const currentSubscription = await stripe.subscriptions.retrieve(subscription[0].subscriptionId);
+    const currentSubscription = await stripe.subscriptions.retrieve(subscription[0].currentSubscriptionId);
 
     await stripe.subscriptions.cancel(currentSubscription.id);
 
@@ -43,7 +42,7 @@ module.exports.deleteStripeSubscription = async (event) => {
     const updateDbSubscription = await subscriptionService.Post({
       ...subscription[0],
       userId,
-      stripeSubscriptionId: currentSubscription.id,
+      currentSubscriptionId: currentSubscription.id,
       price: subscription.price,
       updatedAt: new Date(),
       status: 'canceled'
@@ -63,8 +62,8 @@ module.exports.deleteStripeSubscription = async (event) => {
   }
 
   // try {
-  //   const subscriptionId = event.pathParameters.id;
-  //   const subscription = await stripe.subscriptions.cancel(subscriptionId);
+  //   const currentSubscriptionId = event.pathParameters.id;
+  //   const subscription = await stripe.subscriptions.cancel(currentSubscriptionId);
 
   //   return getResponse(200, JSON.stringify(subscription), null);
   // } catch (error) {

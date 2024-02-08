@@ -9,6 +9,10 @@ provider:
 plugins:
   - serverless-offline
 
+custom:
+  serverless-offline:
+    httpPort: 9090
+
 functions:
   deleteProduct:
     handler: handlers/db/products.Delete
@@ -53,11 +57,17 @@ functions:
       - httpApi:
           path: /stripe/customers
           method: post
-  createCustomer:
-    handler: handlers/db/add.save
+  registration:
+    handler: /handlers/db/users.registration
     events:
       - httpApi:
-          path: /customers/save
+          path: /customers/registration
+          method: post
+  login:
+    handler: /handlers/db/users.login
+    events:
+      - httpApi:
+          path: /customers/login
           method: post
   getStripeCustomer:
     handler: /handlers/customer/getStripeCustomer.getStripeCustomer
@@ -103,6 +113,31 @@ functions:
           path: /stripe/subscriptions/{id}
           method: delete
 
+  createStripeProduct:
+    handler: /handlers/product/createStripeProduct.createStripeProduct
+    events:
+      - httpApi:
+          path: /stripe/products
+          method: post
+  updateStripeProduct:
+    handler: /handlers/product/updateStripeProduct.updateStripeProduct
+    events:
+      - httpApi:
+          path: /stripe/products/{id}
+          method: put
+  getStripeProduct:
+    handler: /handlers/product/getStripeProduct.getStripeProduct
+    events:
+      - httpApi:
+          path: /stripe/products/{id}
+          method: get
+  listStripeProducts:
+    handler: /handlers/product/listStripeProducts.listStripeProducts
+    events:
+      - httpApi:
+          path: /stripe/products
+          method: get
+
   retrieveCustomerPaymentMethod:
     handler: /handlers/payment/retrieveCustomerPaymentMethod.retrieveCustomerPaymentMethod
     events:
@@ -132,5 +167,5 @@ functions:
     handler: /handlers/webhook/webhook.webhook
     events:
       - httpApi:
-          path: /stripe/webhook
+          path: /stripe/webhook/
           method: post

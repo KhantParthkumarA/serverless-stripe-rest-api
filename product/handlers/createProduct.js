@@ -2,8 +2,15 @@
 
 const { v4: uuidv4 } = require('uuid');
 const AWS = require('aws-sdk');
+const config = require('../../env')
+let awsConfig = {
+    "region": "us-east-1",
+    "endpoint": "http://dynamodb.us-east-1.amazonaws.com",
+    "accessKeyId": config.accesskey, "secretAccessKey": config.secretkey
+};
+AWS.config.update(awsConfig);
 
-const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' });
+const docClient = new AWS.DynamoDB.DocumentClient();
 const tableName = 'Product';
 
 module.exports.createProduct = async (event) => {

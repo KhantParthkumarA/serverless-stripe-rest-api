@@ -165,7 +165,7 @@ exports.Put = async (event) => {
     };
 
     try {
-        const data = await documentClient.update(params).promise();
+        const data = await docClient.update(params).promise();
         responseBody = JSON.stringify(data);
         statusCode = 204;
     } catch (err) {
