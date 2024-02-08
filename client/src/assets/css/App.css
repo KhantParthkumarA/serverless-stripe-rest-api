@@ -1,0 +1,160 @@
+@import '~antd/dist/antd.css';
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  font-family: 'NoirPro';
+  /* background: #f0f2f5; */
+}
+
+@media screen and (max-width: 575px) {
+  .gx-app-login-wrap {
+    padding-top: 20px;
+    -webkit-justify-content: center !important;
+    -ms-justify-content: center !important;
+    justify-content: center !important;
+  }
+}
+
+.ant-table-thead>tr>th .anticon-filter,
+.ant-table-thead>tr>th .ant-table-filter-icon {
+  top: 50% !important;
+}
+
+.gx-user-popover li {
+  width: auto !important;
+}
+
+#root,
+.ant-layout {
+  height: calc(100vh - 0.01%);
+  width: 100%;
+  overflow: hidden;
+}
+
+.ant-layout.with-alert {
+  background-color: #f8f8fb;
+  padding: 48px 24px;
+}
+
+@media screen and (max-width: 768px) {
+  .ant-layout.with-alert {
+    padding: 0;
+  }
+}
+
+.highlight {
+  color: #038fde;
+}
+
+.callback-wrapper {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader-wrapper {
+  width: 100%;
+  height: calc(100vh - 72px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ant-page-header-heading-title {
+  margin-right: 0;
+}
+
+/* TAG */
+.ant-page-header-heading .ant-tag {
+  margin-bottom: 0;
+}
+
+.ant-tag.PENDING {
+  color: #fa8c16;
+  background: #fff7e6;
+  border-color: #ffd591;
+}
+
+.ant-tag.CLOSED {
+  color: #52c41a;
+  background: #f6ffed;
+  border-color: #b7eb8f;
+}
+
+.ant-tag.OPEN {
+  color: #1890ff;
+  background: #e6f7ff;
+  border-color: #91d5ff;
+}
+
+.ant-table-cell>.ant-tag {
+  margin: 0;
+}
+
+/* END - TAG */
+
+.ant-steps.lead-users-steps {
+  display: block;
+}
+
+.lead-users-steps.ant-steps-horizontal:not(.ant-steps-label-vertical) .ant-steps-item {
+  margin-right: 50px;
+  padding-right: 20px;
+  padding-left: 20px;
+}
+
+.login-step {
+  margin: 10px;
+  width: 230px;
+}
+
+.csv-btn,
+.csv-btn:focus,
+.csv-btn:active,
+.csv-btn:hover {
+  color: inherit;
+  padding-right: 45px;
+}
+
+.google-logo {
+  line-height: 35px !important;
+}
+
+.google-logo div {
+  height: 35px !important;
+  width: 35px !important;
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+}
+
+.google-logo svg {
+  width: 35px !important;
+  height: 35px !important;
+  /* .hidden-client-data,
+.hidden-client-data-th {
+  display: none;
+} */
+}
+
+span.hidden-client-code {
+  font-weight: 100 !important;
+}
+
+@media (max-width: 768px) {
+  .support {
+    height: calc(100vh - 00px);
+  }
+
+  #root,
+  .ant-layout {
+    height: 100%;
+    width: 100%;
+  }
+
+  .ant-layout.with-alert {
+    padding: 0;
+  }
+}

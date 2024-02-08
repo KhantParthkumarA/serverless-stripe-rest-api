@@ -1,0 +1,15 @@
+.total_heading_name {
+  font-size: 20px;
+}
+
+.total_heading_number {
+  font-size: 30px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.inner_amount_icon_div {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 16px;
+}
